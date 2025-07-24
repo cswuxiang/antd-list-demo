@@ -1,265 +1,379 @@
-import React from 'react';
-import { Table, Tag, Badge, Space, Typography, Tabs } from 'antd';
+import React, { useState } from 'react';
+import {
+  Table,
+  Tag,
+  Space,
+  Typography,
+  Button,
+  Switch,
+  Input,
+  Select,
+  Card,
+  Popconfirm,
+  message
+} from 'antd';
+import {
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  PlusOutlined,
+  BarChartOutlined
+} from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import './App.css';
 
 const { Title, Text } = Typography;
+const { Search } = Input;
+const { Option } = Select;
 
-// 榜单数据
-interface RankingData {
+// 数据项接口
+interface DataItem {
   key: string;
-  rank: number;
-  name: string;
-  totalScore: number;
-  codeSecurityScore: number;
-  codeQualityScore: number;
+  id: string;
+  projectName: string;
+  dataSourceType: string;
+  dataSourceName: string;
+  status: boolean;
+  creator: string;
+  createTime: string;
+  updateTime: string;
+  description: string;
 }
 
-const rankingData: RankingData[] = [
+// 模拟数据
+const mockData: DataItem[] = [
   {
     key: '1',
-    rank: 1,
-    name: 'Dawn-Coder-Plus-20241108',
-    totalScore: 68.19,
-    codeSecurityScore: 94.99,
-    codeQualityScore: 82.92,
+    id: 'DRC-000001',
+    projectName: 'my-datasource',
+    dataSourceType: 'MySQL-TestPoint',
+    dataSourceName: 'test-mysql',
+    status: true,
+    creator: '张三',
+    createTime: '2024-04-15 17:30:45',
+    updateTime: '2024-04-15 17:30:45',
+    description: '测试数据源连接'
   },
   {
     key: '2',
-    rank: 2,
-    name: 'Grok-3',
-    totalScore: 66.78,
-    codeSecurityScore: 95.69,
-    codeQualityScore: 87.13,
+    id: 'DRC-000002',
+    projectName: 'user-analytics',
+    dataSourceType: 'PostgreSQL-TestPoint',
+    dataSourceName: 'analytics-db',
+    status: true,
+    creator: '李四',
+    createTime: '2024-04-14 16:25:30',
+    updateTime: '2024-04-14 16:25:30',
+    description: '用户行为分析数据'
   },
   {
     key: '3',
-    rank: 3,
-    name: 'Claude-Sonnet-4-20250514',
-    totalScore: 65.48,
-    codeSecurityScore: 47.6,
-    codeQualityScore: 96.98,
+    id: 'DRC-000003',
+    projectName: 'order-system',
+    dataSourceType: 'Redis-TestPoint',
+    dataSourceName: 'order-cache',
+    status: false,
+    creator: '王五',
+    createTime: '2024-04-13 14:20:15',
+    updateTime: '2024-04-13 14:20:15',
+    description: '订单系统缓存'
   },
   {
     key: '4',
-    rank: 4,
-    name: 'GPT-4o-20241120',
-    totalScore: 65.35,
-    codeSecurityScore: 67.87,
-    codeQualityScore: 76.77,
+    id: 'DRC-000004',
+    projectName: 'log-collection',
+    dataSourceType: 'Elasticsearch-TestPoint',
+    dataSourceName: 'app-logs',
+    status: true,
+    creator: '赵六',
+    createTime: '2024-04-12 11:15:22',
+    updateTime: '2024-04-12 11:15:22',
+    description: '应用日志收集'
   },
   {
     key: '5',
-    rank: 5,
-    name: 'Claude-3.7-Sonnet-20250219',
-    totalScore: 63.21,
-    codeSecurityScore: 45.71,
-    codeQualityScore: 97.63,
+    id: 'DRC-000005',
+    projectName: 'file-storage',
+    dataSourceType: 'MongoDB-TestPoint',
+    dataSourceName: 'file-meta',
+    status: true,
+    creator: '孙七',
+    createTime: '2024-04-11 09:45:18',
+    updateTime: '2024-04-11 09:45:18',
+    description: '文件元数据存储'
   },
   {
     key: '6',
-    rank: 6,
-    name: 'Claude-Opus-4-20250514',
-    totalScore: 60.12,
-    codeSecurityScore: 35.85,
-    codeQualityScore: 100,
+    id: 'DRC-000006',
+    projectName: 'message-queue',
+    dataSourceType: 'RabbitMQ-TestPoint',
+    dataSourceName: 'msg-broker',
+    status: false,
+    creator: '周八',
+    createTime: '2024-04-10 15:30:45',
+    updateTime: '2024-04-10 15:30:45',
+    description: '消息队列服务'
   },
   {
     key: '7',
-    rank: 7,
-    name: 'Claude-3.7-Sonnet-Thinking-20250219',
-    totalScore: 58.76,
-    codeSecurityScore: 40.53,
-    codeQualityScore: 99.76,
+    id: 'DRC-000007',
+    projectName: 'data-warehouse',
+    dataSourceType: 'ClickHouse-TestPoint',
+    dataSourceName: 'analytics-dw',
+    status: true,
+    creator: '吴九',
+    createTime: '2024-04-09 13:22:33',
+    updateTime: '2024-04-09 13:22:33',
+    description: '数据仓库分析'
   },
   {
     key: '8',
-    rank: 8,
-    name: 'o4-mini-20250416',
-    totalScore: 51.61,
-    codeSecurityScore: 37.65,
-    codeQualityScore: 71.31,
-  },
-  {
-    key: '9',
-    rank: 9,
-    name: 'DeepSeek-V3-20250324',
-    totalScore: 49.26,
-    codeSecurityScore: 20.91,
-    codeQualityScore: 93.65,
-  },
-  {
-    key: '10',
-    rank: 10,
-    name: 'Gemini-2.5-Pro-Exp-20250325',
-    totalScore: 48.26,
-    codeSecurityScore: 32.22,
-    codeQualityScore: 73.2,
-  },
-  {
-    key: '11',
-    rank: 11,
-    name: 'DeepSeek-R1-20250528',
-    totalScore: 46.25,
-    codeSecurityScore: 18.52,
-    codeQualityScore: 88.23,
-  },
-];
-
-// 导航标签数据
-const tabItems = [
-  { key: '1', label: '所有榜单' },
-  { key: '2', label: '编程' },
-  { key: '3', label: '护理健康科研' },
-  { key: '4', label: 'SQL 工具' },
-  { key: '5', label: '商务写作' },
-  { key: '6', label: '代码生成' },
-  { key: '7', label: '输入输出' },
-  { key: '8', label: '政府化' },
-  { key: '9', label: '开放域对话' },
-  { key: '10', label: '百科知识问答能力' },
-  { key: '11', label: 'InBench' },
-  { key: '12', label: '不安全内容检测' },
-  { key: '13', label: 'XAE' },
+    id: 'DRC-000008',
+    projectName: 'search-engine',
+    dataSourceType: 'Solr-TestPoint',
+    dataSourceName: 'search-index',
+    status: true,
+    creator: '郑十',
+    createTime: '2024-04-08 10:18:27',
+    updateTime: '2024-04-08 10:18:27',
+    description: '搜索引擎索引'
+  }
 ];
 
 function App() {
-  // 渲染排名徽章
-  const renderRankBadge = (rank: number) => {
-    if (rank === 1) {
-      return <Badge count={rank} style={{ backgroundColor: '#faad14' }} />;
-    } else if (rank === 2) {
-      return <Badge count={rank} style={{ backgroundColor: '#52c41a' }} />;
-    } else if (rank === 3) {
-      return <Badge count={rank} style={{ backgroundColor: '#ff7875' }} />;
-    } else {
-      return <Badge count={rank} style={{ backgroundColor: '#d9d9d9', color: '#000' }} />;
-    }
+  const [data, setData] = useState<DataItem[]>(mockData);
+  const [loading] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
+
+  // 处理状态切换
+  const handleStatusChange = (key: string, checked: boolean) => {
+    setData(prevData =>
+      prevData.map(item =>
+        item.key === key ? { ...item, status: checked } : item
+      )
+    );
+    message.success(`状态已${checked ? '启用' : '禁用'}`);
   };
 
-  // 渲染分数链接
-  const renderScoreLink = (score: number) => (
-    <a href="#" style={{ color: '#1890ff' }}>
-      {score}
-    </a>
-  );
+  // 处理删除
+  const handleDelete = (key: string) => {
+    setData(prevData => prevData.filter(item => item.key !== key));
+    message.success('删除成功');
+  };
+
+  // 处理编辑
+  const handleEdit = (record: DataItem) => {
+    message.info(`编辑项目: ${record.projectName}`);
+  };
+
+  // 过滤数据
+  const filteredData = data.filter(item => {
+    const matchesSearch =
+      item.projectName.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.dataSourceType.toLowerCase().includes(searchText.toLowerCase()) ||
+      item.creator.toLowerCase().includes(searchText.toLowerCase());
+    
+    const matchesStatus =
+      statusFilter === 'all' ||
+      (statusFilter === 'active' && item.status) ||
+      (statusFilter === 'inactive' && !item.status);
+
+    return matchesSearch && matchesStatus;
+  });
 
   // 表格列定义
-  const columns: ColumnsType<RankingData> = [
+  const columns: ColumnsType<DataItem> = [
     {
-      title: '排名',
-      dataIndex: 'rank',
-      key: 'rank',
+      title: '项目ID',
+      dataIndex: 'id',
+      key: 'id',
+      width: 120,
+      render: (text: string) => (
+        <Text copyable style={{ color: '#1890ff' }}>
+          {text}
+        </Text>
+      ),
+    },
+    {
+      title: '项目名称',
+      dataIndex: 'projectName',
+      key: 'projectName',
+      width: 150,
+      render: (text: string) => (
+        <Space>
+          <BarChartOutlined style={{ color: '#1890ff' }} />
+          <Text strong>{text}</Text>
+        </Space>
+      ),
+    },
+    {
+      title: '数据源类型',
+      dataIndex: 'dataSourceType',
+      key: 'dataSourceType',
+      width: 180,
+      render: (text: string) => {
+        const getTypeColor = (type: string) => {
+          if (type.includes('MySQL')) return 'blue';
+          if (type.includes('PostgreSQL')) return 'green';
+          if (type.includes('Redis')) return 'red';
+          if (type.includes('MongoDB')) return 'orange';
+          if (type.includes('Elasticsearch')) return 'purple';
+          return 'default';
+        };
+        return <Tag color={getTypeColor(text)}>{text}</Tag>;
+      },
+    },
+    {
+      title: '数据源名称',
+      dataIndex: 'dataSourceName',
+      key: 'dataSourceName',
+      width: 150,
+    },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
       width: 80,
       align: 'center',
-      render: (rank: number) => renderRankBadge(rank),
+      render: (status: boolean, record: DataItem) => (
+        <Switch
+          checked={status}
+          onChange={(checked) => handleStatusChange(record.key, checked)}
+          size="small"
+        />
+      ),
     },
     {
-      title: '名称',
-      dataIndex: 'name',
-      key: 'name',
-      width: 300,
+      title: '创建人',
+      dataIndex: 'creator',
+      key: 'creator',
+      width: 100,
     },
     {
-      title: '总得分',
-      dataIndex: 'totalScore',
-      key: 'totalScore',
+      title: '创建时间',
+      dataIndex: 'createTime',
+      key: 'createTime',
+      width: 160,
+      render: (text: string) => (
+        <Text type="secondary" style={{ fontSize: '12px' }}>
+          {text}
+        </Text>
+      ),
+    },
+    {
+      title: '更新时间',
+      dataIndex: 'updateTime',
+      key: 'updateTime',
+      width: 160,
+      render: (text: string) => (
+        <Text type="secondary" style={{ fontSize: '12px' }}>
+          {text}
+        </Text>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'action',
       width: 120,
       align: 'center',
-      render: (score: number) => renderScoreLink(score),
-    },
-    {
-      title: '代码安全',
-      dataIndex: 'codeSecurityScore',
-      key: 'codeSecurityScore',
-      width: 120,
-      align: 'center',
-      render: (score: number) => score,
-    },
-    {
-      title: '代码质量',
-      dataIndex: 'codeQualityScore',
-      key: 'codeQualityScore',
-      width: 120,
-      align: 'center',
-      render: (score: number) => score,
+      render: (_, record: DataItem) => (
+        <Space size="small">
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            size="small"
+            onClick={() => handleEdit(record)}
+          >
+            编辑
+          </Button>
+          <Popconfirm
+            title="确定要删除这个项目吗？"
+            onConfirm={() => handleDelete(record.key)}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button
+              type="link"
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+            >
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
     },
   ];
 
   return (
-    <div style={{ 
-      padding: '24px', 
-      maxWidth: '1200px', 
-      margin: '0 auto',
+    <div style={{
+      padding: '24px',
       backgroundColor: '#f5f5f5',
       minHeight: '100vh'
     }}>
-      {/* 标题区域 */}
+      {/* 页面标题 */}
       <div style={{ marginBottom: '24px' }}>
-        <Space align="baseline" style={{ marginBottom: '8px' }}>
-          <Title level={2} style={{ margin: 0, fontSize: '24px', fontWeight: 'bold' }}>
-            大模型代码安全性榜单
-          </Title>
-          <Tag color="blue" style={{ fontSize: '12px' }}>最新榜单</Tag>
-        </Space>
+        <Title level={2} style={{ margin: 0, color: '#1f1f1f' }}>
+          数据源管理
+        </Title>
         <Text type="secondary" style={{ fontSize: '14px' }}>
-          当前第个榜单共 AI 大模型代码生成安全性评测榜单，使用通用的防御策略与主流的对抗方法
+          管理和监控所有数据源连接状态
         </Text>
       </div>
 
-      {/* 导航标签 */}
-      <div style={{ marginBottom: '24px' }}>
-        <Tabs 
-          defaultActiveKey="1" 
-          items={tabItems}
-          size="small"
-          style={{ 
-            backgroundColor: 'white',
-            padding: '0 16px',
-            borderRadius: '6px'
-          }}
-        />
-      </div>
-
-      {/* 榜单表格 */}
-      <div style={{ 
-        backgroundColor: 'white', 
-        borderRadius: '6px',
-        padding: '16px'
-      }}>
-        <div style={{ marginBottom: '16px' }}>
-          <Space align="center">
-            <span style={{ 
-              fontSize: '16px', 
-              fontWeight: 'bold',
-              color: '#1890ff'
-            }}>
-              🏆 综合排名
-            </span>
+      {/* 操作区域 */}
+      <Card style={{ marginBottom: '16px' }}>
+        <Space style={{ width: '100%', justifyContent: 'space-between' }}>
+          <Space>
+            <Search
+              placeholder="搜索项目名称、数据源类型或创建人"
+              allowClear
+              style={{ width: 300 }}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              prefix={<SearchOutlined />}
+            />
+            <Select
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 120 }}
+            >
+              <Option value="all">全部状态</Option>
+              <Option value="active">已启用</Option>
+              <Option value="inactive">已禁用</Option>
+            </Select>
           </Space>
-        </div>
-        
+          <Button type="primary" icon={<PlusOutlined />}>
+            新建数据源
+          </Button>
+        </Space>
+      </Card>
+
+      {/* 数据表格 */}
+      <Card>
         <Table
           columns={columns}
-          dataSource={rankingData}
+          dataSource={filteredData}
+          loading={loading}
           pagination={{
-            pageSize: 5,
-            showSizeChanger: false,
+            pageSize: 10,
+            showSizeChanger: true,
             showQuickJumper: true,
             showTotal: (total, range) =>
-              `第 ${range[0]}-${range[1]} 条/共 ${total} 条`,
+              `显示 ${range[0]}-${range[1]} 条，共 ${total} 条记录`,
             position: ['bottomCenter'],
+            pageSizeOptions: ['10', '20', '50', '100'],
           }}
           size="middle"
           bordered={false}
-          style={{
-            backgroundColor: 'white'
-          }}
+          scroll={{ x: 1200 }}
           rowClassName={(record, index) =>
             index % 2 === 0 ? 'table-row-light' : 'table-row-dark'
           }
         />
-      </div>
+      </Card>
     </div>
   );
 }
