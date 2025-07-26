@@ -1,0 +1,56 @@
+.model-ranking-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.header-section {
+  margin-bottom: 24px;
+}
+
+.ranking-tabs {
+  margin-bottom: 24px;
+}
+
+.ranking-card {
+  margin-bottom: 24px;
+}
+
+.rank-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: #f0f0f0;
+  font-weight: bold;
+}
+
+.rank-badge.gold {
+  background-color: #ffd700;
+  color: #fff;
+}
+
+.rank-badge.silver {
+  background-color: #c0c0c0;
+  color: #fff;
+}
+
+.rank-badge.bronze {
+  background-color: #cd7f32;
+  color: #fff;
+}
+
+.ant-tabs-tab {
+  padding: 8px 16px;
+}
+
+.ant-table-thead > tr > th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+.ant-card-head-title {
+  font-weight: bold;
+}
